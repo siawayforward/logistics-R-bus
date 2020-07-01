@@ -1,8 +1,7 @@
 
 #import other needed modules
-!pip install mysqlclient -q
 import MySQLdb   
-import DAO_Modules
+import Bus_Logistics_DAO as bld
 
 #import needed python modules
 import datetime as d
@@ -88,19 +87,19 @@ class User:
         if table == 'driver':
             #get credentials and object from database
             self.get_credentials('Error! Please enter a valid')
-            driver_cred = DAO_Modules.Driver_DAO.get_driver(self.username, self.password, 'Invalid credentials. Try again' ) 
+            driver_cred = bld.Driver_DAO.get_driver(self.username, self.password, 'Invalid credentials. Try again' ) 
             while driver_cred is None:
                 self.get_credentials('Error! Please enter a valid')
-                driver_cred = DAO_Modules.Driver_DAO.get_driver(self.username, self.password, 'Invalid credentials. Try again' ) 
+                driver_cred = bld.Driver_DAO.get_driver(self.username, self.password, 'Invalid credentials. Try again' ) 
             return self.copy(driver_cred, 'driver')
         #Owner check
         if table == 'owner':
             #get credentials and object from database
             self.get_credentials('Error! Please enter a valid')
-            owner_cred = DAO_Modules.Owner_DAO.get_owner(self.username, self.password, 'Invalid credentials. Try again' )
+            owner_cred = bld.Owner_DAO.get_owner(self.username, self.password, 'Invalid credentials. Try again' )
             while owner_cred is None:
                 self.get_credentials('Error! Please enter a valid')
-                owner_cred = DAO_Modules.Owner_DAO.get_owner(self.username, self.password, 'Invalid credentials. Try again' ) 
+                owner_cred = bld.Owner_DAO.get_owner(self.username, self.password, 'Invalid credentials. Try again' ) 
             return self.copy(owner_cred, 'owner')       
     
     #Function to send user back to log in page
@@ -122,18 +121,18 @@ class User:
         #Username, password, and account specific credentials
         if table == 'driver':
             self.get_credentials('Duplicate credential! Please choose a unique')
-            driver_cred = DAO_Modules.Driver_DAO.get_driver(self.username, self.password,' ')
+            driver_cred = bld.Driver_DAO.get_driver(self.username, self.password,' ')
             while driver_cred:
                 self.get_credentials('Duplicate credential! Please choose a unique')
-                driver_cred = DAO_Modules.Driver_DAO.get_driver(self.username, self.password,' ')
+                driver_cred = bld.Driver_DAO.get_driver(self.username, self.password,' ')
                 self.copy(driver_cred, 'driver')
         if table == 'owner':
             self.active = 1
             self.get_credentials('Duplicate credential! Please choose a unique')
-            owner_cred = DAO_Modules.Owner_DAO.get_owner(self.username, self.password,' ')
+            owner_cred = bld.Owner_DAO.get_owner(self.username, self.password,' ')
             while owner_cred:
                 self.get_credentials('Duplicate credential! Please choose a unique')
-                owner_cred = DAO_Modules.Owner_DAO.get_owner(self.username, self.password,' ')
+                owner_cred = bld.Owner_DAO.get_owner(self.username, self.password,' ')
                 self.copy(owner_cred, 'owner')
         
     #Function to add new user (bus owner in this case)
@@ -145,12 +144,12 @@ class User:
             #Driver sign up
             self.get_sign_up_values('driver') #get values
             #insert/create account
-            DAO_Modules.Driver_DAO.add_new_driver(self)
+            bld.Driver_DAO.add_new_driver(self)
         if table == 'owner':
             #Owner sign up
             self.get_sign_up_values('owner') #get values
             #insert/create account
-            DAO_Modules.Owner_DAO.add_new_owner(self)        
+            bld.Owner_DAO.add_new_owner(self)        
             
 
 #Subclass of the user class
@@ -244,7 +243,7 @@ class Owner(User):
         #get bus information from owner and validate inputs
         bus_no = self.validate_bus_addition('Please provide the bus license plate number (T000 LLL): ')
         #check system for comparison
-        buses = DAO_Modules.Bus_DAO.get_owner_buses(self.owner_ID())
+        buses = bld.Bus_DAO.get_owner_buses(self.owner_ID())
         flag = False
         for bus in buses:
             if bus.bus_number() == bus_no: flag = True
@@ -258,7 +257,7 @@ class Owner(User):
             proceed = input('Confirm you would like to add bus {} (Y/N): '.format(bus_no))
             if proceed.upper() == 'Y':
                 proceed = None #reset
-                if DAO_Modules.Bus_DAO.add_new_bus(new_bus):
+                if bld.Bus_DAO.add_new_bus(new_bus):
                     #check if owner wants to assign bus to a driver immediately
                     proceed = input('Would you like to assign bus {} to a driver? (Y/N): '.format(bus_no))
                     if proceed.upper() == 'Y': self.assign_bus_to_driver(bus_no)
@@ -271,29 +270,29 @@ class Owner(User):
     #method to assign or reassign buses to drivers
     def assign_bus_to_driver(self, new_bus):
         print(color.BOLD + '\nAssign Bus to Driver:' + color.END)
-        bus_detail = DAO_Modules.Bus_DAO.get_bus(new_bus)
+        bus_detail = bld.Bus_DAO.get_bus(new_bus)
         for row in bus_detail:
             if row[0]:
                 #Get driver that owner wants to assign bus to
                 fName = input('Please enter driver\'s credentials \nFirst Name: ')
                 lName = input('Last Name: ')
                 #check system to see if driver exists or ask owner to update name
-                driver = DAO_Modules.Driver_DAO.get_driver_by_name(fName, lName)
+                driver = bld.Driver_DAO.get_driver_by_name(fName, lName)
                 if driver:
                     if str(driver.assigned_bus()) and str(driver.assigned_bus()) != 'T000 LLL':
                         #change status of current bus assignment to active = 0 if exists
-                        DAO_Modules.Bus_DAO.change_bus_status(driver.assigned_bus(), 0)
+                        bld.Bus_DAO.change_bus_status(driver.assigned_bus(), 0)
                         #change to the new bus and confirm
                         driver.assigned_bus(new_bus)
-                        DAO_Modules.Driver_DAO.assign_bus(driver)
+                        bld.Driver_DAO.assign_bus(driver)
                         #change status of the newly assigned bus to active
-                        DAO_Modules.Bus_DAO.change_bus_status(driver.assigned_bus(), 1)
+                        bld.Bus_DAO.change_bus_status(driver.assigned_bus(), 1)
                     if str(driver.assigned_bus()) == 'T000 LLL':
                         #change to the new bus and confirm
                         driver.assigned_bus(new_bus)
-                        DAO_Modules.Driver_DAO.assign_bus(driver)
+                        bld.Driver_DAO.assign_bus(driver)
                         #change status of the newly assigned bus to active
-                        DAO_Modules.Bus_DAO.change_bus_status(driver.assigned_bus(), 1)
+                        bld.Bus_DAO.change_bus_status(driver.assigned_bus(), 1)
                 else:
                     print('{} {} could not be found on our list of drivers'.format(fName, lName))
             else:
@@ -322,9 +321,9 @@ class Driver(User):
     #method to show message on login
     def driver_login_view(self):
         #check bus status
-        buses = DAO_Modules.Bus_DAO.get_bus(self.assigned_bus())
+        buses = bld.Bus_DAO.get_bus(self.assigned_bus())
         #check admin scheduled runs
-        runs = DAO_Modules.Schedule_DAO.get_upcoming_runs(self.assigned_bus())
+        runs = bld.Schedule_DAO.get_upcoming_runs(self.assigned_bus())
         admin_dates = []
         if runs:
             for run in runs: 
@@ -508,12 +507,12 @@ class Driver(User):
             while start <= end:
                 #check if such a run already exists
                 inq.schedule_date(start)
-                if DAO_Modules.Schedule_DAO.get_scheduled_run(inq):
+                if bld.Schedule_DAO.get_scheduled_run(inq):
                     print('Error! You are already scheduled to drive on {}'.format(inq.schedule_date()))
                     count +=1 #track number of scheduled runs that week
                     start += delta
                 else: #insert and track each run
-                    count += DAO_Modules.Schedule_DAO.add_new_schedule(inq)
+                    count += bld.Schedule_DAO.add_new_schedule(inq)
                     start += delta #move to next date
             #Prompt the user for their upcoming scheduled runs
             print('You have {} {} runs scheduled from {} to {}.'\
@@ -526,7 +525,7 @@ class Driver(User):
         #get an inquiry from user
         inq = self.get_driver_days()
         #check for available routes
-        need_routes = DAO_Modules.Route_DAO.get_need_routes(inq)
+        need_routes = bld.Route_DAO.get_need_routes(inq)
         #format and display availability to driver
         if need_routes is not None and inq is not None:
             print(color.BOLD + '\nFor your availability of {sd} to {ed} for {r:2s} run(s) '\
@@ -570,7 +569,7 @@ class Driver(User):
     #method to get the run that a user wants to update
     def get_update_run(self, note):
         #get all routes for verification
-        runs = DAO_Modules.Schedule_DAO.get_upcoming_runs(self.assigned_bus())
+        runs = bld.Schedule_DAO.get_upcoming_runs(self.assigned_bus())
         if len(runs) == 0:
             print('You do not have any upcoming runs scheduled')
             self.redirect()
@@ -612,11 +611,11 @@ class Driver(User):
                 #see if updated run exists before changing to it
                 print(color.BOLD + 'Run Details: ' + color.END , str(new_run.schedule_date()), new_run.bus_code() ,\
                       new_run.run_time(), new_run.route_number()+ color.END)
-                if DAO_Modules.Schedule_DAO.get_scheduled_run(new_run):
+                if bld.Schedule_DAO.get_scheduled_run(new_run):
                     print(color.RED + 'Error! Another identical run for {} exists.'.format(str(new_run.schedule_date()))+ color.END)
                     self.redirect()
                 else:  #add to database and notify user
-                    DAO_Modules.Schedule_DAO.update_schedule_run(new_run, current)
+                    bld.Schedule_DAO.update_schedule_run(new_run, current)
                     self.redirect()
             else: #no updates 
                 print('Your scheduled run on {} will remain unchanged.'.format(str(current.schedule_date())))
@@ -632,7 +631,7 @@ class Driver(User):
         while decide.upper() != 'Y' and decide.upper() != 'N':
             decide = input('Error! Please inform if you want to delete this run (Y/N): ')
         if decide.upper() == 'Y':
-            DAO_Modules.Schedule_DAO.delete_schedule_run(current)
+            bld.Schedule_DAO.delete_schedule_run(current)
         else:
             print('Your run on {} will remain as scheduled.'.format(str(current.schedule_date())))
         #back to home page
@@ -706,14 +705,14 @@ class Admin:
             while action != '1' and action != '0':
                 action = input('Invalid selection! Enter \n1 to activate owner \n0 to deactivate owner: ')
             #get owner
-            own = DAO_Modules.Owner_DAO.get_owner_by_name(fName, lName, 'Invalid credentials. Try again' )
+            own = bld.Owner_DAO.get_owner_by_name(fName, lName, 'Invalid credentials. Try again' )
             if own: #update owner account and buses if owner exists
-                DAO_Modules.Owner_DAO.change_owner_status(own.owner_ID(), int(action))
+                bld.Owner_DAO.change_owner_status(own.owner_ID(), int(action))
                 #update buses if owner is deactivated
                 if int(action) == 0: 
-                    own_buses = DAO_Modules.Bus_DAO.get_owner_buses(own.owner_ID()) 
+                    own_buses = bld.Bus_DAO.get_owner_buses(own.owner_ID()) 
                     for bus in own_buses: #deactivate all buses
-                        DAO_Modules.Bus_DAO.change_bus_status(bus.bus_number(), 0)
+                        bld.Bus_DAO.change_bus_status(bus.bus_number(), 0)
                 self.redirect()
             else: 
                 print('{} {} is not listed as one of the bus owners in your system.'.format(fName, lName))
@@ -751,7 +750,7 @@ class Admin:
         or bus_x[1:4].isdigit() == False or bus_x[4].isspace() == False:
             bus_x = input('Invalid format. Please provide the license plate code for the bus (T000 LLL): ')
         #see if bus exists to proceed
-        bus = DAO_Modules.Bus_DAO.get_bus(bus_x) #retrieve bus
+        bus = bld.Bus_DAO.get_bus(bus_x) #retrieve bus
         for row in bus:
             if row: 
                 print('Bus Details: ', row[0], 'Owner: ', row[1], row[2])
@@ -759,13 +758,13 @@ class Admin:
                 while action != 1 and action !=0:
                     action = int(input('Enter \n1 = Activate bus \n0 = Deactivate bus'))
                 ##change bus status
-                DAO_Modules.Bus_DAO.change_bus_status(bus_x, action)
+                bld.Bus_DAO.change_bus_status(bus_x, action)
             else: print('This bus doesn\'t exist in the system.')
     
     #method to change route need for a specific route
     def change_route_need(self):
         #get and display all routes
-        routes = DAO_Modules.Route_DAO.get_all_routes()
+        routes = bld.Route_DAO.get_all_routes()
         formatter = '{i:5s} {rc:15s} {s:15s} {e:15s} {am:10s} {pm:10s}'
         print(color.BOLD + formatter.format(i='#', rc='Route Code', s='Start Location', e='End Location', am='AM Need', pm='PM Need') + color.END)
         for route in routes:
@@ -787,7 +786,7 @@ class Admin:
         #update route
         route.AM_need(AM)
         route.PM_need(PM)
-        DAO_Modules.Route_DAO.update_route_need(route)
+        bld.Route_DAO.update_route_need(route)
         
     #method to check if date was entered correctly
     def check_date_entry(self, input_note):
@@ -814,7 +813,7 @@ class Admin:
     def check_route_need(self, note):
         #get date of interest
         day = self.check_date_entry(note)
-        need_areas = DAO_Modules.Route_DAO.get_next_route_need(day)
+        need_areas = bld.Route_DAO.get_next_route_need(day)
         #display schedules for that day
         formatter = '{r:15s} {runAM:10s} {runPM:5s}'
         print(color.BOLD + day + color.END)
@@ -836,7 +835,7 @@ class Admin:
         print(color.BOLD + '\nAssign Drivers to Routes:' + color.END)
         #see drivers and assign a route to them
         print('Here is a list of drivers who are active to drive on {}: '.format(day))
-        drivers = DAO_Modules.Driver_DAO.get_available_drivers(day)
+        drivers = bld.Driver_DAO.get_available_drivers(day)
         formatter = '{n:5s} {fn:15s} {ln:15s} {bus:10s}'
         print(color.BOLD + formatter.format(n='#', fn = 'First Name', ln='Last Name', bus='Bus Code') + color.END)
         for driver in drivers:
@@ -899,7 +898,7 @@ class Schedule:
         #flag for whether or not line was added
         checker = False 
         #access DAO method and add schedule
-        count = DAO_Modules.Schedule_DAO.add_new_schedule(self)
+        count = bld.Schedule_DAO.add_new_schedule(self)
         #check if schedule has been added
         if count > 0:
             checker = True
@@ -944,10 +943,10 @@ class Route:
         #flag for whether or not line was added
         checker = False 
         #access DAO method and add schedule
-        checker = DAO_Modules.Route_DAO.add_new_schedule(None, new_route)
+        checker = bld.Route_DAO.add_new_route()
         #check if schedule has been added
         if checker == True:
-            print(color.DARKCYAN + 'The new route ', new_route.route_code(), ' has been added' + color.END)
+            print(color.DARKCYAN + 'The new route has been added' + color.END)
         return checker    
 
     

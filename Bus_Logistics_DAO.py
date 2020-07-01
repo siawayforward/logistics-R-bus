@@ -1,19 +1,11 @@
-
 # install mysql and import database connector
-!pip install mysqlclient -q
 import MySQLdb   
+import Bus_Logistics as bl
+
 #import used python classes
 import datetime as d
 #define today's date and format
 today = d.datetime.now().strftime('%Y-%m-%d')
-
-
-#import user classes notebook
-!pip install nbimporter -q
-import nbimporter
-import User_Modules
-from importlib import reload
-reload(User_Modules)
 
 #colors for formatting text
 class color:
@@ -36,7 +28,7 @@ class Schedule_DAO:
     def __init__(self): pass
     
     #method to add a new entry to the schedule table
-    def add_new_schedule(entry):
+    def add_new_schedule(self, entry):
         try:
             #database accessor objects
             uname = 'root'
@@ -60,7 +52,7 @@ class Schedule_DAO:
             print(color.RED + color.BOLD + 'Insertion error! Please try again later' + color.END)              
     
     #get a scheduled run
-    def get_scheduled_run(entry):
+    def get_scheduled_run(self, entry):
         try:
             #database accessor objects
             uname = 'root'
@@ -78,7 +70,7 @@ class Schedule_DAO:
             result = cursor.fetchall()
             run = None
             for row in result:
-                run = User_Modules.Schedule(route=row[0], bus=row[1], start_date=row[2], end_date=None, run=row[3], added=str(row[4]))
+                run = bl.Schedule(route=row[0], bus=row[1], start_date=row[2], end_date=None, run=row[3], added=str(row[4]))
             #return object
             return run
         except:
@@ -86,7 +78,7 @@ class Schedule_DAO:
 
         
     #method to update current schedule run
-    def update_schedule_run(new, current):
+    def update_schedule_run(self, new, current):
         try:
             #database accessor objects
             uname = 'root'
@@ -112,7 +104,7 @@ class Schedule_DAO:
             conn.close()
            
     #delete a scheduled run
-    def delete_schedule_run(entry):
+    def delete_schedule_run(self, entry):
         try:
             #database accessor objects
             uname = 'root'
@@ -137,7 +129,7 @@ class Schedule_DAO:
             conn.close()
     
     #get the bus circulation and runs scheduled for a particular day and time
-    def get_day_count(time_of_day):
+    def get_day_count(self, time_of_day):
         try:
             #database accessor objects
             uname = 'root'
@@ -165,7 +157,7 @@ class Schedule_DAO:
             conn.close() 
             
     #method to check whether any dates in the future have runs scheduled
-    def check_future_need(inquiry):
+    def check_future_need(self, inquiry):
         try:
             #database accessor objects
             uname = 'root'
@@ -190,7 +182,7 @@ class Schedule_DAO:
             print(color.RED + color.BOLD +'Route counting error' + color.END)
             
     #get list of all upcoming runs for a specific driver to update
-    def get_upcoming_runs(bus):
+    def get_upcoming_runs(self, bus):
         try:
             #database accessor objects
             uname = 'root'
@@ -208,7 +200,7 @@ class Schedule_DAO:
             result = cursor.fetchall()
             routes = []
             for row in result:
-                row = User_Modules.Schedule(bus=row[0], start_date=row[1], end_date=None, route=row[2], run=row[3], added=str(row[4]))
+                row = bl.Schedule(bus=row[0], start_date=row[1], end_date=None, route=row[2], run=row[3], added=str(row[4]))
                 routes.append(row)
             return routes
         except:
@@ -220,9 +212,13 @@ class Route_DAO:
     
     #Initializer
     def __init__(self): pass
-    
-    #method to add a new route
-    def get_current_route(route_code):
+
+    #add a new route
+    def add_new_route(self, route=None):
+        return True
+
+    #method to get details for a specific route
+    def get_current_route(self, route_code):
         try:
             #database accessor objects
             uname = 'root'
@@ -236,18 +232,18 @@ class Route_DAO:
             query = 'SELECT RouteCode, StartLocation, EndLocation, MorningNeed, AfternoonNeed FROM route '\
             + 'WHERE RouteCode = \'{}\''.format(route_code)
             cursor.execute(query)
-            #check if deletion happened and return flag
+            #check if selection happened and return flag
             result = cursor.fetchall()
-            for row in result: route = User_Modules.Route(route=row[0], start=row[1], end=row[2], AM=row[3], PM=row[4])
+            for row in result: route = bl.Route(route=row[0], start=row[1], end=row[2], AM=row[3], PM=row[4])
             return route
         except:
-            print(color.RED + color.BOLD +'Deletion error: Route could not be deleted.' + color.END)
+            print(color.RED + color.BOLD +'Selection error: Routes could not be selected.' + color.END)
         finally:
             cursor.close()
             conn.close()
             
     #method to get the daily scheduling for each route
-    def get_next_route_need(day):
+    def get_next_route_need(self, day):
         try:
         #database accessor objects
             uname = 'root'
@@ -279,7 +275,7 @@ class Route_DAO:
             conn.close()
             
     #method to update daily need for a route
-    def update_route_need(route):
+    def update_route_need(self, route):
         try:
             #database accessor objects
             uname = 'root'
@@ -301,7 +297,7 @@ class Route_DAO:
             conn.close()
 
     #method to get routes based on where drivers are needed to allow a driver to set schedule
-    def get_need_routes(inq):
+    def get_need_routes(self, inq):
         try:
             #database accessor objects
             uname = 'root'
@@ -330,7 +326,7 @@ class Route_DAO:
             print(color.RED + color.BOLD +'Error - Failed to get need routes at this time' + color.END)      
     
     #method to get list of all routes
-    def get_all_routes():
+    def get_all_routes(self):
         try:
             #database accessor objects
             uname = 'root'
@@ -346,7 +342,7 @@ class Route_DAO:
             result = cursor.fetchall()
             routes = [] #return value
             for row in result: 
-                route = User_Modules.Route(route=row[0], start=row[1], end=row[2], AM=row[3], PM=row[4])
+                route = bl.Route(route=row[0], start=row[1], end=row[2], AM=row[3], PM=row[4])
                 routes.append(route)
             return routes        
         except:
@@ -360,7 +356,7 @@ class Driver_DAO:
     def __init__(self): pass
     
     #method to check if credentials exist and get driver profile as they log in, or the bus they are assigned
-    def get_driver(username, password, note):
+    def get_driver(self, username, password, note):
         try:
             #database accessor objects
             uname = 'root'
@@ -378,7 +374,7 @@ class Driver_DAO:
             result = cursor.fetchall()
             #store result in module object for driver and return it
             for row in result:
-                dr = User_Modules.Driver(fName=row[0], lName=row[1], uName=row[2], pWord=row[3], phone=row[4], bus=row[5], ID=row[6])
+                dr = bl.Driver(fName=row[0], lName=row[1], uName=row[2], pWord=row[3], phone=row[4], bus=row[5], ID=row[6])
             if dr: return dr
         except:
             print(color.RED + color.BOLD + note + color.END)     
@@ -387,7 +383,7 @@ class Driver_DAO:
             conn.close() 
     
         #method to check if credentials exist and get driver profile as they log in, or the bus they are assigned
-    def get_driver_by_name(first, last):
+    def get_driver_by_name(self, first, last):
         try:
             #database accessor objects
             uname = 'root'
@@ -404,7 +400,7 @@ class Driver_DAO:
             result = cursor.fetchall()
             #store result in module object for driver and return it
             for row in result:
-                dr = User_Modules.Driver(fName=row[0], lName=row[1], uName=None, pWord=None, phone=None, bus=row[2], ID=row[3])
+                dr = bl.Driver(fName=row[0], lName=row[1], uName=None, pWord=None, phone=None, bus=row[2], ID=row[3])
             if dr: return dr
         except:
             print(color.RED + color.BOLD +'Invalid credentials or driver may not exist in the system. Try again' + color.END)     
@@ -413,7 +409,7 @@ class Driver_DAO:
             conn.close() 
             
     #method to check if credentials exist and get driver profile as they log in, or the bus they are assigned
-    def get_available_drivers(day):
+    def get_available_drivers(self, day):
         try:
             #database accessor objects
             uname = 'root'
@@ -432,7 +428,7 @@ class Driver_DAO:
             result = cursor.fetchall()
             drivers = [] #return value
             for row in result:
-                driver = User_Modules.Driver(fName=row[0], lName=row[1], uName=None, pWord=None, bus=row[2], phone=None, ID=None)
+                driver = bl.Driver(fName=row[0], lName=row[1], uName=None, pWord=None, bus=row[2], phone=None, ID=None)
                 drivers.append(driver)
             return drivers
         except:
@@ -442,7 +438,7 @@ class Driver_DAO:
             conn.close() 
             
     #method to get a list of routes
-    def add_new_driver(dr):
+    def add_new_driver(self, dr):
         try:
             #database accessor objects
             uname = 'root'
@@ -467,7 +463,7 @@ class Driver_DAO:
             conn.close()
             
     #method used to assign a bus to a driver
-    def assign_bus(driver):
+    def assign_bus(self, driver):
         #try:
             #database accessor objects
             uname = 'root'
@@ -497,7 +493,7 @@ class Owner_DAO:
     def __init__(self): pass
     
     #method to check if credentials exist
-    def get_owner(username, password, note):
+    def get_owner(self, username, password, note):
         try:
             #database accessor objects
             uname = 'root'
@@ -514,7 +510,7 @@ class Owner_DAO:
             #check result and add to an owner object
             result = cursor.fetchall()
             for row in result:
-                own = User_Modules.Owner(fName=row[0], lName=row[1], uName=row[2], pWord=row[3], \
+                own = bl.Owner(fName=row[0], lName=row[1], uName=row[2], pWord=row[3], \
                                          phone=row[4], active=row[5], ID=row[6])
             #return owner if found
             if own: return own
@@ -526,7 +522,7 @@ class Owner_DAO:
             conn.close() 
     
     #method to get owner by name
-    def get_owner_by_name(first_name, last_name, note):
+    def get_owner_by_name(self, first_name, last_name, note):
         try:
             #database accessor objects
             uname = 'root'
@@ -542,7 +538,7 @@ class Owner_DAO:
             #check result and add to an owner object
             result = cursor.fetchall()
             for row in result:
-                own = User_Modules.Owner(fName=row[0], lName=row[1], uName=row[2], pWord=row[3], \
+                own = bl.Owner(fName=row[0], lName=row[1], uName=row[2], pWord=row[3], \
                                          phone=row[4], active=row[5], ID=row[6])
             #return owner if found
             if own: return own
@@ -554,7 +550,7 @@ class Owner_DAO:
             conn.close() 
             
     #method to get a list of routes
-    def add_new_owner(own):
+    def add_new_owner(self, own):
         try:
             #database accessor objects
             uname = 'root'
@@ -579,7 +575,7 @@ class Owner_DAO:
             conn.close()
             
     #method used to activate or deactivate owner in system        
-    def change_owner_status(owner_id, status):
+    def change_owner_status(self, owner_id, status):
         try:
             #database accessor objects
             uname = 'root'
@@ -612,7 +608,7 @@ class Bus_DAO:
     def __init__(self): pass
     
     #Method to add a new bus
-    def add_new_bus(bus):
+    def add_new_bus(self, bus):
         try:
             #database accessor objects
             uname = 'root'
@@ -636,7 +632,7 @@ class Bus_DAO:
             cursor.close()
             conn.close()
        
-    def change_bus_status(bus, status):
+    def change_bus_status(self, bus, status):
         try:
             #database accessor objects
             uname = 'root'
@@ -659,7 +655,7 @@ class Bus_DAO:
             conn.close()
     
     #method to get all buses owned by one person
-    def get_owner_buses(owner_ID):
+    def get_owner_buses(self, owner_ID):
         try:
             #database accessor objects
             uname = 'root'
@@ -674,7 +670,7 @@ class Bus_DAO:
             result = cursor.fetchall()
             buses = [] #list to store items extracted
             for row in result:
-                bus = User_Modules.Bus(bus=row[0], owner=row[1], active=row[2])
+                bus = bl.Bus(bus=row[0], owner=row[1], active=row[2])
                 buses.append(bus)
             return buses
         except:
@@ -684,7 +680,7 @@ class Bus_DAO:
             conn.close()
             
      #method to get all buses owned by one person
-    def get_bus(bus):
+    def get_bus(self, bus):
         try:
             #database accessor objects
             uname = 'root'

@@ -2,3 +2,5 @@ project report.pdf
 dao_modules.ipynb
 user_modules.ipynb
 .ipynb_checkpoints
+__pycache__
+.vscode
