@@ -351,7 +351,7 @@ class Route_DAO:
             
 
 class Driver_DAO:
-    
+
     #Initializer
     def __init__(self): pass
     
@@ -375,10 +375,10 @@ class Driver_DAO:
             #store result in module object for driver and return it
             for row in result:
                 dr = bl.Driver(fName=row[0], lName=row[1], uName=row[2], pWord=row[3], phone=row[4], bus=row[5], ID=row[6])
-            if dr: return dr
+            if dr: return dr  
         except:
-            print(color.RED + color.BOLD + note + color.END)     
-        finally:
+            print(color.RED + color.BOLD + note + color.END)  
+        finally:                      
             cursor.close()
             conn.close() 
     
