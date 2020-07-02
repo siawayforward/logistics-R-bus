@@ -3,7 +3,7 @@
 A Python text application designed to allow the local government in KJM Tanzania to schedule bus owners and their drivers to set times and days in advance for the routes available to drive for.  
 **Note:** This was intentionally designed as a text application to account for a larger part of the target population not having smart phones. For demonstration purposes, this would therefore be ran on your terminal.
 
-**Installations**
+**Installations**  
 To run these files, you will need:
 
 - An IDE or text editor: this program was completed in VS code (initially in Jupyter notebooks). If you'd like those, please reach out
