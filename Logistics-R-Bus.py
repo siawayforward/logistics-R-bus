@@ -18,8 +18,9 @@ def main():
         while response not in range(1,4):
             response = int((input(c.RED + c.BOLD + bad + c.END + note)).strip())
     finally:
-        pass
+        start_system(response)
 
+def start_system(response):
     #allow prompts according to user5
     if response == 1:
         #Driver
